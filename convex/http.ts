@@ -1,10 +1,9 @@
-import { httpActionGeneric, httpRouter, HttpRouter } from "convex/server";
+import { httpRouter } from "convex/server";
 import { Webhook } from "svix";
-import{api} from "./_generated/api";
+import { api } from "./_generated/api";
 import { WebhookEvent } from "@clerk/nextjs/server";
-import { request } from "http";
-import {httpAction} from "./_generated/server";
-import { TemplateContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { httpAction } from "./_generated/server";
+
 const http = httpRouter();
 
 http.route({
@@ -44,7 +43,7 @@ http.route({
          const eventType = evt.type;
 
          if(eventType ==="user.created"){
-            const{id, first_name, image_url, email_addresses} = evt.data;
+            const{id, first_name, last_name, image_url, email_addresses} = evt.data;
             
             const email = email_addresses[0].email_address;
 
@@ -55,7 +54,7 @@ http.route({
                     email,
                     name,
                     image: image_url,
-                    clerk_id: id
+                    clerkId: id
                 })
             } catch(error){
                 console.log("Error creating user:", error);
@@ -63,6 +62,8 @@ http.route({
             }
          }
 
+        return new Response("OK", { status: 200 });
     })
 })
 
+export default http;
