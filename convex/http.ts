@@ -62,7 +62,7 @@ http.route({
             }
          }
 
-        return new Response("OK", { status: 200 });
+        return new Response("Webhooks processed successfully", { status: 200 });
     })
 })
 
