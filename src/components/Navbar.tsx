@@ -1,6 +1,6 @@
 "use client";
 import React from 'react'
-import { SignInButton, SignUpButton, useUser } from '@clerk/nextjs';
+import { SignInButton, SignUpButton, UserButton, useUser } from '@clerk/nextjs';
 import { DumbbellIcon, HomeIcon, UserIcon, ZapIcon } from 'lucide-react';
 import Link from 'next/link';
 import {Button} from "./ui/button";
@@ -52,6 +52,8 @@ const Navbar = () => {
              className='ml-2 border-primary/50 text-primary hover:text-white hover:bg-primary/10'>
              <Link href="/genrate-program">Get Started</Link>
              </Button>
+
+             <UserButton/>
           </>
          ):(
           <>
