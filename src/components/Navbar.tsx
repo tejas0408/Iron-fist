@@ -1,6 +1,6 @@
 "use client";
 import React from 'react'
-import { useUser } from '@clerk/nextjs';
+import { SignInButton, SignUpButton, useUser } from '@clerk/nextjs';
 import { DumbbellIcon, HomeIcon, UserIcon, ZapIcon } from 'lucide-react';
 import Link from 'next/link';
 import {Button} from "./ui/button";
@@ -50,10 +50,26 @@ const Navbar = () => {
              asChild
              variant='outline'
              className='ml-2 border-primary/50 text-primary hover:text-white hover:bg-primary/10'>
-
+             <Link href="/genrate-program">Get Started</Link>
              </Button>
           </>
-         ):()}
+         ):(
+          <>
+             <SignInButton>
+              <Button 
+              variant={"outline"}
+              className='border-primary/50 text-primary hiver:text-white hover:bg-primary/10'>
+               Sign In
+              </Button>
+             </SignInButton>
+
+             <SignUpButton>
+              <Button className='bg-primary text-primary-foreground hover:bg-primary/90'>
+               Sign Up
+              </Button>
+             </SignUpButton>
+          </>
+         )}
        </nav>
       </div>
       </header>
