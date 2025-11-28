@@ -10,7 +10,22 @@ const Homepage = () => {
           <div className='absolute -top-10 left-0 w-40 h-10 border-l-2 border-t-2 border-border'/>
           {/*Left side */}
           <div className='lg:col-span-7 space-y-8 relative'>
+          <h1 className='text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight'>
+           <div>
+            <span className='text-foreground'>Transform</span>
+           </div>
+           <div>
+            <span className='text-primary'>Your Body</span>
+           </div>
+           <div className='pt-2'>
+             <span className='text-foreground'>With Advanced</span>
+           </div>
+           <div className='pt-2'>
+            <span className='text-foreground'>AI</span>
+            <span className='text-primary'>Technology</span>
+           </div>
 
+          </h1>
           </div>
           </div>
 
