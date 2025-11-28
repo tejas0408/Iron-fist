@@ -7,7 +7,11 @@ const Homepage = () => {
         <div className='container mx-auto px-4'>
           <div className='grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative'>
           {/**Corner decoration */}
-          <div className='absolute -top-10 left-0 w-40 h-10 border-l-2 border-t-2 border-border'></div>
+          <div className='absolute -top-10 left-0 w-40 h-10 border-l-2 border-t-2 border-border'/>
+          {/*Left side */}
+          <div className='lg:col-span-7 space-y-8 relative'>
+
+          </div>
           </div>
 
         </div>
