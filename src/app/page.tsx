@@ -26,6 +26,7 @@ const Homepage = () => {
            </div>
 
           </h1>
+          {/*seperator line */}
           </div>
           </div>
 
