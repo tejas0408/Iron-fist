@@ -27,6 +27,8 @@ const Homepage = () => {
 
           </h1>
           {/*seperator line */}
+          <div className='h-px w-full bg-gradient-to-r from-primary via-secondary to-primary opacity-50'></div>
+          
           </div>
           </div>
 
