@@ -10,10 +10,10 @@
   /* Cyberpunk Theme Colors */
   --cyber-black: #000000;
   --cyber-dark: #0a0c14;
-  --cyber-blue-bright: #18cef2; 
-  --cyber-blue: #1089bd; 
-  --cyber-blue-dark: #0b4a7d; 
-  --cyber-blue-glow: #38bdf8; 
+  --cyber-blue-bright: #18cef2;
+  --cyber-blue: #1089bd;
+  --cyber-blue-dark: #0b4a7d;
+  --cyber-blue-glow: #38bdf8;
   --cyber-accent: #0ff4;
 
   /* Background */
@@ -132,10 +132,12 @@
     border-color: var(--border);
     outline-color: rgba(var(--ring), 0.5);
   }
+
   body {
     background-color: var(--background);
     color: var(--foreground);
   }
+
   /* https://tailwindcss.com/docs/upgrade-guide#buttons-use-the-default-cursor */
   button:not(:disabled),
   [role="button"]:not(:disabled) {
@@ -147,6 +149,7 @@
   0% {
     background-position: 0 0;
   }
+
   100% {
     background-position: 0 100%;
   }
@@ -156,6 +159,7 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -173,9 +177,11 @@
   0% {
     height: 10%;
   }
+
   50% {
     height: 100%;
   }
+
   100% {
     height: 10%;
   }
@@ -189,6 +195,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -199,6 +206,7 @@
 }
 
 @theme inline {
+  /* existing sidebar vars... */
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -207,12 +215,25 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* 🔥 Add these: base UI colors used by your @apply calls */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+
+  /* (optional but common in shadcn setups) */
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-destructive: var(--destructive);
 }
+
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
