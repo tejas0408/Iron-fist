@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { ArrowRightIcon } from 'lucide-react'
 import TerminalOverlay from '@/components/terminal-overlay';
+import UserPrograms from '@/components/UserPrograms';
 const Homepage = () => {
   return (
     <div className='flex flex-col min0h-screen text-foreground overflow-hidden'>
@@ -106,17 +107,11 @@ const Homepage = () => {
                 {/* TERMINAL OVERLAY */}
                 <TerminalOverlay />
               </div>
-
             </div>
-
-
-
-
-
-
           </div>
         </div>
       </section>
+      <UserPrograms />
     </div>
   )
 }
