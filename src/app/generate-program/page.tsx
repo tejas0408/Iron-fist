@@ -17,10 +17,27 @@ const GenerateProgramPage = () => {
   const messageContainerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const handleCallStart = () => { }
-    const handleCallEnd = () => { }
-    const handleSpeechStart = () => { }
-    const handleSpeechEnd = () => { }
+    const handleCallStart = () => {
+      console.log("Call started")
+      setConnecting(true)
+      setCallActive(true)
+      setCallEnded(false)
+    }
+    const handleCallEnd = () => {
+      console.log("Call ended")
+      setConnecting(false)
+      setCallActive(false)
+      setIsSpeaking(false)
+      setCallEnded(true)
+    }
+    const handleSpeechStart = () => {
+      console.log("AI started Speaking")
+      setIsSpeaking(true)
+    }
+    const handleSpeechEnd = () => {
+      console.log("AI stopped Speaking")
+      setIsSpeaking(false)
+    }
     const handleMessage = () => { }
     const handleError = () => { }
 
