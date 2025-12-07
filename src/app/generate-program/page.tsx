@@ -24,7 +24,14 @@ const GenerateProgramPage = () => {
     vapi.on("message", handleMessage)
     vapi.on("error", handleError)
 
-
+    return () => {
+      vapi.off("call-start", handleCallStart)
+      vapi.off("call-end", handleCallEnd)
+      vapi.off("speech-start", handleSpeechStart)
+      vapi.off("speech-end", handleSpeechEnd)
+      vapi.off("message", handleMessage)
+      vapi.off("error", handleError)
+    }
   }, [])
 
   return (
