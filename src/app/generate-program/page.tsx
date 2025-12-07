@@ -38,8 +38,12 @@ const GenerateProgramPage = () => {
       console.log("AI stopped Speaking")
       setIsSpeaking(false)
     }
-    const handleMessage = () => { }
-    const handleError = () => { }
+    const handleMessage = (message: any) => { }
+    const handleError = (error: any) => {
+      console.log("Vapi Error", error);
+      setConnecting(false);
+      setCallActive(false);
+    }
 
     vapi.on("call-start", handleCallStart)
     vapi.on("call-end", handleCallEnd)
