@@ -16,6 +16,25 @@ const GenerateProgramPage = () => {
 
   const messageContainerRef = useRef<HTMLDivElement>(null)
 
+  //auto scroll messages
+  useEffect(() => {
+    if (messageContainerRef.current) {
+      messageContainerRef.current.scrollTop = messageContainerRef.current.scrollHeight
+    }
+  }, [messages])
+
+  //navigate yser to profile page after call ends
+  useEffect(() => {
+    if (callEnded) {
+      const redirectTimer = setTimeout(() => {
+        router.push("/profile")
+      }, 1500);
+      return () => clearTimeout(redirectTimer)
+    }
+  }, [callEnded, router])
+
+
+  //set up event listner
   useEffect(() => {
     const handleCallStart = () => {
       console.log("Call started")
