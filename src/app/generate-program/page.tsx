@@ -17,6 +17,13 @@ const GenerateProgramPage = () => {
   const messageContainerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    const handleCallStart = () => { }
+    const handleCallEnd = () => { }
+    const handleSpeechStart = () => { }
+    const handleSpeechEnd = () => { }
+    const handleMessage = () => { }
+    const handleError = () => { }
+
     vapi.on("call-start", handleCallStart)
     vapi.on("call-end", handleCallEnd)
     vapi.on("speech-start", handleSpeechStart)
