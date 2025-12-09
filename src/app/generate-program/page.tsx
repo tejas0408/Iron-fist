@@ -116,8 +116,13 @@ const GenerateProgramPage = () => {
             <span>
               Generate Your
             </span>
-
+            <span className="text-primary uppercase">
+              Fitness Program
+            </span>
           </h1>
+          <p className="text-muted-foreground mt-2">
+            Have a voice with our AI assistant to create your personalized fitness program.
+          </p>
 
         </div>
 
