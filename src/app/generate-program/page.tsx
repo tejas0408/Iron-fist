@@ -103,13 +103,27 @@ const GenerateProgramPage = () => {
       } catch (error) {
         console.log("Vapi Error", error);
         setConnecting(false);
-        setCallActive(false);
       }
     }
   }
 
   return (
-    <div>GenerateProgramPage</div>
+    <div className="flex flex-col min-h-screen text-foreground overflow-hidden pb-6 pt-24">
+      <div className="container mx-auto px-4 h-full max-w-5xl">
+        {/*Title */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold font-mono">
+            <span>
+              Generate Your
+            </span>
+
+          </h1>
+
+        </div>
+
+      </div>
+
+    </div>
   )
 }
 
