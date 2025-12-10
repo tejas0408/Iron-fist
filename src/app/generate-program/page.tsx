@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { vapi } from "@/lib/vapi";
+import { Card } from "@/components/ui/card";
 
 const GenerateProgramPage = () => {
   const [callActive, setCallActive] = useState(false);
@@ -126,6 +127,12 @@ const GenerateProgramPage = () => {
 
         </div>
 
+        {/*Video Call Area */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          {/*AI Assistant Card*/}
+          <Card className="bg-card/90">
+          </Card>
+        </div>
       </div>
 
     </div>
