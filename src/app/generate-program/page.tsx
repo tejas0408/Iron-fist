@@ -130,7 +130,7 @@ const GenerateProgramPage = () => {
         {/*Video Call Area */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {/*AI Assistant Card*/}
-          <Card className="bg-card/90">
+          <Card className="bg-card/90 backdrop-blur-sm border border-border overflow-hidden relative">
           </Card>
         </div>
       </div>
