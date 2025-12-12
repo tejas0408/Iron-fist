@@ -156,11 +156,12 @@ const GenerateProgramPage = () => {
               <div className="relative size-32 mb-4">
                 <div
                   className={`absolute inset-0 bg-primary opacity-10 rounded-full blur-lg ${isSpeaking ? "animate-pulse" : ""}`}
-                >
-
+                />
+                <div className="relative w-full h-full rounded-full bg-card flex items-center justify-center border border-border overflow-hidden">
+                  <img src="/Generated Image September 28, 2025 - 5_47PM.png" alt="AI Assistant" className="w-full h-full object-cover" />
                 </div>
-              </div>
 
+              </div>
             </div>
           </Card>
 
