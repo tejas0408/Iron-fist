@@ -163,6 +163,20 @@ const GenerateProgramPage = () => {
               </div>
               <h2 className="text-lg font-bold text-foreground">Fit Voice AI</h2>
               <p className="text-sm text-muted-foreground mt-1">Your Personalized Fitness Coach</p>
+
+              {/*Speaking Indicator */}
+              <div className={`mt-4 flex items-center gap-2 px-3 py-1 rounded-full bg-card border border-border ${isSpeaking ? "border-primary" : ""}`}>
+                <div
+                  className={`w-2 h-2 rounded-full ${isSpeaking ? "bg-primary animate-pulse" : "bg-muted"}`} />
+
+                <span className="text-xs text-muted-foreground">
+                  {isSpeaking ? "Speaking..." : callActive ? "Listening..." : callEnded ? "Redirecting to profile..." : ""}
+                </span>
+
+
+
+              </div>
+
             </div>
           </Card>
 
