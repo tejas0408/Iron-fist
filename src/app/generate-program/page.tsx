@@ -160,8 +160,9 @@ const GenerateProgramPage = () => {
                 <div className="relative w-full h-full rounded-full bg-card flex items-center justify-center border border-border overflow-hidden">
                   <img src="/Generated Image September 28, 2025 - 5_47PM.png" alt="AI Assistant" className="w-full h-full object-cover" />
                 </div>
-
               </div>
+              <h2 className="text-lg font-bold text-foreground">Fit Voice AI</h2>
+              <p className="text-sm text-muted-foreground mt-1">Your Personalized Fitness Coach</p>
             </div>
           </Card>
 
