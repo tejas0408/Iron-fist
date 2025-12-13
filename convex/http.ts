@@ -7,63 +7,90 @@ import { httpAction } from "./_generated/server";
 const http = httpRouter();
 
 http.route({
-    path:"/clerk-webhook",
-    method:"POST",  
-    handler: httpAction(async (ctx,request) =>{
-        const webhookSecret= process.env.CLERK_WEBHOOK_SECRET;
-        if(!webhookSecret){
+    path: "/clerk-webhook",
+    method: "POST",
+    handler: httpAction(async (ctx, request) => {
+        const webhookSecret = process.env.CLERK_WEBHOOK_SECRET;
+        if (!webhookSecret) {
             throw new Error("Missing CLERK_WEBHOOK_SECRET environment variable ");
-         }
-         const svix_id = request.headers.get("svix-id");
-         const svix_signature =  request.headers.get("svix-signature");
-         const svix_timestamp = request.headers.get("svix-timestamp");
+        }
+        const svix_id = request.headers.get("svix-id");
+        const svix_signature = request.headers.get("svix-signature");
+        const svix_timestamp = request.headers.get("svix-timestamp");
 
-         if(!svix_id || !svix_signature || !svix_timestamp){
-            return new Response("No svix headers found",{
+        if (!svix_id || !svix_signature || !svix_timestamp) {
+            return new Response("No svix headers found", {
                 status: 400,
             });
-         }
-         const payload = await request.json();
-         const body  = JSON.stringify(payload);
+        }
+        const payload = await request.json();
+        const body = JSON.stringify(payload);
 
-         const wh = new Webhook(webhookSecret);
-         let evt: WebhookEvent;
+        const wh = new Webhook(webhookSecret);
+        let evt: WebhookEvent;
 
-         try{
-            evt= wh.verify(body,{
+        try {
+            evt = wh.verify(body, {
                 "svix-id": svix_id,
                 "svix-timestamp": svix_timestamp,
                 "svix-signature": svix_signature,
             }) as WebhookEvent;
-         } catch(err){
+        } catch (err) {
             console.error("Error verifying webhook:", err);
-            return new Response("Error occured", {status: 400});
-         }
+            return new Response("Error occured", { status: 400 });
+        }
 
-         const eventType = evt.type;
+        const eventType = evt.type;
 
-         if(eventType ==="user.created"){
-            const{id, first_name, last_name, image_url, email_addresses} = evt.data;
-            
+        if (eventType === "user.created") {
+            const { id, first_name, last_name, image_url, email_addresses } = evt.data;
+
             const email = email_addresses[0].email_address;
 
             const name = `${first_name || ""} ${last_name || ""}`.trim();
 
-            try{
-                await ctx.runMutation(api.users.syncUser,{
+            try {
+                await ctx.runMutation(api.users.syncUser, {
                     email,
                     name,
                     image: image_url,
                     clerkId: id
                 })
-            } catch(error){
+            } catch (error) {
                 console.log("Error creating user:", error);
-                return new Response("error creating user", {status: 500});
+                return new Response("error creating user", { status: 500 });
             }
-         }
+        }
 
         return new Response("Webhooks processed successfully", { status: 200 });
     })
+});
+
+http.route({
+    path: "/vapi/generate-program",
+    method: "POST",
+    handler: httpAction(async (ctx, request) => {
+        try {
+            const payload = await request.json();
+            const { user_id,
+                age,
+                height,
+                weight,
+                injuries,
+                fitness_goal,
+                fitness_level,
+                workout_days,
+                dietetary_restrictions
+
+            } = payload;
+
+
+        } catch (error) {
+            console.log("Error generating program:", error);
+            return new Response("Error generating program", { status: 500 });
+        }
+    })
 })
+
 
 export default http;
