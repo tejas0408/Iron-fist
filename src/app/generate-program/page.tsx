@@ -4,12 +4,13 @@ import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { vapi } from "@/lib/vapi";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 const GenerateProgramPage = () => {
   const [callActive, setCallActive] = useState(false);
   const [conncecting, setConnecting] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState<any[]>([]);
   const [callEnded, setCallEnded] = useState(false);
 
   const { user } = useUser()
@@ -58,7 +59,12 @@ const GenerateProgramPage = () => {
       console.log("AI stopped Speaking")
       setIsSpeaking(false)
     }
-    const handleMessage = (message: any) => { }
+    const handleMessage = (message: any) => {
+      if (message.type === "transcript" && message.transcriptType === "final") {
+        const newMessage = { content: message.transcript, role: message.role }
+        setMessages(prev => [...prev, newMessage])
+      }
+    };
     const handleError = (error: any) => {
       console.log("Vapi Error", error);
       setConnecting(false);
@@ -199,8 +205,64 @@ const GenerateProgramPage = () => {
               </div>
             </div>
           </Card>
+
+
         </div>
 
+        {/* MESSAGE COINTER  */}
+        {messages.length > 0 && (
+          <div
+            ref={messageContainerRef}
+            className="w-full bg-card/90 backdrop-blur-sm border border-border rounded-xl p-4 mb-8 h-64 overflow-y-auto transition-all duration-300 scroll-smooth"
+          >
+            <div className="space-y-3">
+              {messages.map((msg, index) => (
+                <div key={index} className="message-item animate-fadeIn">
+                  <div className="font-semibold text-xs text-muted-foreground mb-1">
+                    {msg.role === "assistant" ? "CodeFlex AI" : "You"}:
+                  </div>
+                  <p className="text-foreground">{msg.content}</p>
+                </div>
+              ))}
+
+              {callEnded && (
+                <div className="message-item animate-fadeIn">
+                  <div className="font-semibold text-xs text-primary mb-1">System:</div>
+                  <p className="text-foreground">
+                    Your fitness program has been created! Redirecting to your profile...
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+        {/* CALL CONTROLS */}
+        <div className="w-full flex justify-center gap-4">
+          <Button
+            className={`w-40 text-xl rounded-3xl ${callActive
+                ? "bg-destructive hover:bg-destructive/90"
+                : callEnded
+                  ? "bg-green-600 hover:bg-green-700"
+                  : "bg-primary hover:bg-primary/90"
+              } text-white relative`}
+            onClick={toggleCall}
+            disabled={conncecting || callEnded}
+          >
+            {conncecting && (
+              <span className="absolute inset-0 rounded-full animate-ping bg-primary/50 opacity-75"></span>
+            )}
+
+            <span>
+              {callActive
+                ? "End Call"
+                : conncecting
+                  ? "Connecting..."
+                  : callEnded
+                    ? "View Profile"
+                    : "Start Call"}
+            </span>
+          </Button>
+        </div>
       </div>
     </div>
 
