@@ -69,6 +69,34 @@ http.route({
     })
 });
 
+
+//Validate the input from ai
+function validateWorkoutPlan(plan: any) {
+    const validatedPlan = {
+        schedule: plan.schedule,
+        exercises: plan.exercises.map((exercise: any) => ({
+            day: exercise.day,
+            routines: exercise.routines.map((routine: any) => ({
+                name: routine.name,
+                sets: typeof routine.sets === "number" ? routine.sets : parseInt(routine.sets) || 1,
+                reps: typeof routine.reps === "number" ? routine.reps : parseInt(routine.reps) || 10,
+            })),
+        })),
+    };
+    return validatedPlan;
+}
+
+function validateDietPlan(plan: any) {
+    const validatedPlan = {
+        dailyCalories: plan.dailyCalories,
+        meals: plan.meals.map((meal: any) => ({
+            name: meal.name,
+            foods: meal.foods,
+        })),
+    };
+    return validatedPlan;
+}
+
 http.route({
     path: "/vapi/generate-program",
     method: "POST",
@@ -143,7 +171,46 @@ http.route({
             const workoutResult = await model.generateContent(workoutPrompt);
             const workoutPlanText = workoutResult.response.text();
 
-            //Validate the input from ai
+            let workoutPlan = JSON.parse(workoutPlanText);
+
+            workoutPlan = validateWorkoutPlan(workoutPlan);
+
+            const dietPrompt = `You are an experienced nutrition coach creating a personalized diet plan based on:
+        Age: ${age}
+        Height: ${height}
+        Weight: ${weight}
+        Fitness goal: ${fitness_goal}
+        Dietary restrictions: ${dietetary_restrictions}
+        
+        As a professional nutrition coach:
+        - Calculate appropriate daily calorie intake based on the person's stats and goals
+        - Create a balanced meal plan with proper macronutrient distribution
+        - Include a variety of nutrient-dense foods while respecting dietary restrictions
+        - Consider meal timing around workouts for optimal performance and recovery
+        
+        CRITICAL SCHEMA INSTRUCTIONS:
+        - Your output MUST contain ONLY the fields specified below, NO ADDITIONAL FIELDS
+        - "dailyCalories" MUST be a NUMBER, not a string
+        - DO NOT add fields like "supplements", "macros", "notes", or ANYTHING else
+        - ONLY include the EXACT fields shown in the example below
+        - Each meal should include ONLY a "name" and "foods" array
+
+        Return a JSON object with this EXACT structure and no other fields:
+        {
+          "dailyCalories": 2000,
+          "meals": [
+            {
+              "name": "Breakfast",
+              "foods": ["Oatmeal with berries", "Greek yogurt", "Black coffee"]
+            },
+            {
+              "name": "Lunch",
+              "foods": ["Grilled chicken salad", "Whole grain bread", "Water"]
+            }
+          ]
+        }
+        
+        DO NOT add any fields that are not in this example. Your response must be a valid JSON object with no additional text.`;
 
 
 
