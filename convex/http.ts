@@ -3,8 +3,11 @@ import { Webhook } from "svix";
 import { api } from "./_generated/api";
 import { WebhookEvent } from "@clerk/nextjs/server";
 import { httpAction } from "./_generated/server";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const http = httpRouter();
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 http.route({
     path: "/clerk-webhook",
@@ -84,6 +87,17 @@ http.route({
 
             } = payload;
 
+            const model = genAI.getGenerativeModel({
+                model: "gemini-2.0-flash-exp",
+                generationConfig: {
+                    temperature: 0.4,
+                    topP: 0.9,
+                    responseMimeType: "application/json",
+
+                }
+            });
+
+            const workoutPrompt = 
 
         } catch (error) {
             console.log("Error generating program:", error);
