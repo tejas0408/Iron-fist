@@ -212,6 +212,14 @@ http.route({
         
         DO NOT add any fields that are not in this example. Your response must be a valid JSON object with no additional text.`;
 
+            const dietResult = await model.generateContent(dietPrompt);
+            const dietPlanText = dietResult.response.text();
+
+            let dietPlan = JSON.parse(dietPlanText);
+
+            dietPlan = validateDietPlan(dietPlan);
+            console.log("Validated Diet plan:", dietPlan);
+
 
 
         } catch (error) {
