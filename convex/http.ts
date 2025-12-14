@@ -140,6 +140,13 @@ http.route({
         
         DO NOT add any fields that are not in this example. Your response must be a valid JSON object with no additional text.`;
 
+            const workoutResult = await model.generateContent(workoutPrompt);
+            const workoutPlanText = workoutResult.response.text();
+
+            //Validate the input from ai
+
+
+
         } catch (error) {
             console.log("Error generating program:", error);
             return new Response("Error generating program", { status: 500 });
