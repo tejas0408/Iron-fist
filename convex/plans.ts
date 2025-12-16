@@ -41,6 +41,7 @@ export const createPlan = mutation({
         for (const paln of activePlans) {
             await ctx.db.patch(paln._id, { isActive: false });
         }
-        await ctx.db.insert("plans", args)
+        const planId = await ctx.db.insert("plans", args)
+        return planId
     }
 })

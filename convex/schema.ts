@@ -1,4 +1,4 @@
-import { defineSchema, defineTable  } from "convex/server";
+import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 
@@ -10,14 +10,14 @@ export default defineSchema({
         clerkId: v.string(),
     }).index("by_clerk_id", ["clerkId"]),
     plans: defineTable({
-        userId: v.id("users"),
+        userId: v.string(),
         name: v.string(),
         workoutPlan: v.object({
             schedule: v.array(v.string()),
             exercises: v.array(v.object({
                 day: v.string(),
-                rountines:v.array(v.object({
-                    name:v.string(),
+                rountines: v.array(v.object({
+                    name: v.string(),
                     sets: v.optional(v.number()),
                     reps: v.optional(v.number()),
                     duration: v.optional(v.string()),
@@ -38,8 +38,8 @@ export default defineSchema({
         isActive: v.boolean(),
 
     })
-    .index("by_user_id", ["userId"])
-    .index("by_active", ["isActive"]),
+        .index("by_user_id", ["userId"])
+        .index("by_active", ["isActive"]),
 
 });
 
