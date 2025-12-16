@@ -220,10 +220,35 @@ http.route({
             dietPlan = validateDietPlan(dietPlan);
             console.log("Validated Diet plan:", dietPlan);
 
+            //save to our db: convex
+            const planId = await ctx.runMutation(api.plans.createPlan, {
+                userId: user_id,
+                dietPlan,
+                name: `${fitness_goal} Plan - ${new Date().toLocaleDateString()}`,
+                workoutPlan,
+                isActive: true,
+            })
 
+            return new Response(
+                JSON.stringify({
+                    success: true,
+                    data: {
+                        planId,
+                        workoutPlan,
+                        dietPlan,
+
+                    },
+                }),
+                {
+                    status: 200,
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                });
 
         } catch (error) {
-            console.log("Error generating program:", error);
+            console.log("Error generating fitness program:", error);
+            //idhar
             return new Response("Error generating program", { status: 500 });
         }
     })
