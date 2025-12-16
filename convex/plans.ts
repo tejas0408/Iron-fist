@@ -35,8 +35,12 @@ export const createPlan = mutation({
         const activePlans = await ctx.db
             .query("plans")
             .withIndex("by_user_id", (q) => q.eq("userId", args.userId))
-            .filter((q) => q.eq("isActive", true))
+            .filter((q) => q.eq(q.field("isActive"), true))
             .collect();
+
+        for (const paln of activePlans) {
+            await ctx.db.patch(paln._id, { isActive: false });
+        }
         await ctx.db.insert("plans", args)
     }
 })
