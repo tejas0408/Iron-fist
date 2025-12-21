@@ -5,6 +5,7 @@ import { useQuery } from "convex/react";
 import { getUserPlans } from "../../../convex/plans";
 import { api } from "../../../convex/_generated/api";
 import { useState } from "react";
+import ProfileHeader from "@/components/ProfileHeader";
 
 const ProfilePage = () => {
   const { user } = useUser();
@@ -18,6 +19,7 @@ const ProfilePage = () => {
 
   return (
     <section className=" relative z-10 pt-12 pb-32 flex-grow container mx-auto px-4">
+      <ProfileHeader user={user} />
 
     </section>
   )
