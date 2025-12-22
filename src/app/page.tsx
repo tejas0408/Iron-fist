@@ -83,6 +83,8 @@ const Homepage = () => {
               <div className="relative aspect-square max-w-lg mx-auto">
                 <div className="relative overflow-hidden rounded-lg bg-cyber-black">
                   <Image
+                    width={500}
+                    height={500}
                     src="/Generated Image September 28, 2025 - 5_51PM.png"
                     alt="AI Fitness Coach"
                     className="size-full object-cover object-center"

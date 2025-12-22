@@ -87,6 +87,8 @@ const UserPrograms = () => {
                                 <div className="flex items-center gap-4 mb-4">
                                     <div className="h-16 w-16 rounded-full overflow-hidden border border-border">
                                         <Image
+                                            width={500}
+                                            height={500}
                                             src={program.profilePic}
                                             alt={`${program.first_name}`}
                                             className="h-full w-full object-cover"
