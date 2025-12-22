@@ -1,16 +1,11 @@
 import React from 'react'
 import { UserResource } from "@clerk/types";
+import CornerElements from "./CornerElements";
 
 const ProfileHeader = ({ user }: { user: UserResource }) => {
     return (
-        <div>
-            <div className="flex items-center gap-4">
-                <img src={user.imageUrl} alt="" />
-                <div>
-                    <h1 className="text-2xl font-bold">{user.firstName} {user.lastName}</h1>
-                    <p className="text-gray-500">{user.email}</p>
-                </div>
-            </div>
+        <div className='mb-10 relative backdrop-blur-sm border-border p-6'>
+            <CornerElements />
         </div>
     )
 }
