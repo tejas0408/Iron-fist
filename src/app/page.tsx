@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ArrowRightIcon } from 'lucide-react'
 import TerminalOverlay from '@/components/terminal-overlay';
 import UserPrograms from '@/components/UserPrograms';
+import Image from 'next/image';
 const Homepage = () => {
   return (
     <div className='flex flex-col min0h-screen text-foreground overflow-hidden'>
@@ -81,7 +82,7 @@ const Homepage = () => {
               {/* IMAGE CONTANINER */}
               <div className="relative aspect-square max-w-lg mx-auto">
                 <div className="relative overflow-hidden rounded-lg bg-cyber-black">
-                  <img
+                  <Image
                     src="/Generated Image September 28, 2025 - 5_51PM.png"
                     alt="AI Fitness Coach"
                     className="size-full object-cover object-center"
