@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { vapi } from "@/lib/vapi";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 const GenerateProgramPage = () => {
   const [callActive, setCallActive] = useState(false);
@@ -188,7 +189,7 @@ const GenerateProgramPage = () => {
                   className={`absolute inset-0 bg-primary opacity-10 rounded-full blur-lg ${isSpeaking ? "animate-pulse" : ""}`}
                 />
                 <div className="relative w-full h-full rounded-full bg-card flex items-center justify-center border border-border overflow-hidden">
-                  <img src="/Generated Image September 28, 2025 - 5_47PM.png" alt="AI Assistant" className="w-full h-full object-cover" />
+                  <Image src="/Generated Image September 28, 2025 - 5_47PM.png" alt="AI Assistant" className="w-full h-full object-cover" />
                 </div>
               </div>
               <h2 className="text-lg font-bold text-foreground">Fit Voice AI</h2>
@@ -210,12 +211,15 @@ const GenerateProgramPage = () => {
             <div className="aspect-video flex flex-col items-center justify-center p-6 relative">
               {/* User Image */}
               <div className="relative size-32 mb-4">
-                <img
-                  src={user?.imageUrl}
-                  alt="User"
-                  // ADD THIS "size-full" class to make it rounded on all images
-                  className="size-full object-cover rounded-full"
-                />
+                {user?.imageUrl && (
+                  <Image
+                    fill
+                    src={user.imageUrl}
+                    alt="User"
+                    // ADD THIS "size-full" class to make it rounded on all images
+                    className="size-full object-cover rounded-full"
+                  />
+                )}
               </div>
               <h2 className="text-xl font-bold text-foreground">You</h2>
               <p className="text-sm text-muted-foreground mt-1">
