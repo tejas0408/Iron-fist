@@ -13,6 +13,8 @@ const ProfileHeader = ({ user }: { user: UserResource | null | undefined }) => {
                     {user.imageUrl ? (
                         <div className="relative w-24 h-24 overflow-hidden rounded-lg">
                             <Image
+                                width={500}
+                                height={500}
                                 src={user.imageUrl}
                                 alt={user.fullName || "Profile"}
                                 className="w-full h-full object-cover"

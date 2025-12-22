@@ -189,7 +189,11 @@ const GenerateProgramPage = () => {
                   className={`absolute inset-0 bg-primary opacity-10 rounded-full blur-lg ${isSpeaking ? "animate-pulse" : ""}`}
                 />
                 <div className="relative w-full h-full rounded-full bg-card flex items-center justify-center border border-border overflow-hidden">
-                  <Image src="/Generated Image September 28, 2025 - 5_47PM.png" alt="AI Assistant" className="w-full h-full object-cover" />
+
+                  <Image
+                    width={500}
+                    height={500}
+                    src="/Generated Image September 28, 2025 - 5_47PM.png" alt="AI Assistant" className="w-full h-full object-cover" />
                 </div>
               </div>
               <h2 className="text-lg font-bold text-foreground">Fit Voice AI</h2>
