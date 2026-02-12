@@ -3,11 +3,10 @@ import { Webhook } from "svix";
 import { api } from "./_generated/api";
 import { WebhookEvent } from "@clerk/nextjs/server";
 import { httpAction } from "./_generated/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
+import OpenAI from "openai";
 const http = httpRouter();
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
 
 http.route({
     path: "/clerk-webhook",
@@ -98,7 +97,7 @@ function validateDietPlan(plan: any) {
 }
 
 http.route({
-    path: "/vapi/generate-program",
+    path: "/generate-program",
     method: "POST",
     handler: httpAction(async (ctx, request) => {
         try {
@@ -115,16 +114,6 @@ http.route({
 
             } = payload;
             console.log("Payload is here", payload);
-
-            const model = genAI.getGenerativeModel({
-                model: "gemini-2.0-flash-exp",
-                generationConfig: {
-                    temperature: 0.4,
-                    topP: 0.9,
-                    responseMimeType: "application/json",
-
-                }
-            });
 
             const workoutPrompt = `You are an experienced fitness coach creating a personalized workout plan based on:
         Age: ${age}
@@ -169,8 +158,16 @@ http.route({
         
         DO NOT add any fields that are not in this example. Your response must be a valid JSON object with no additional text.`;
 
-            const workoutResult = await model.generateContent(workoutPrompt);
-            const workoutPlanText = workoutResult.response.text();
+            const workoutResult = await openai.chat.completions.create({
+                model: "gpt-4o-mini",
+                messages: [
+                    { role: "system", content: "You are an experienced fitness coach. Always respond with valid JSON only." },
+                    { role: "user", content: workoutPrompt },
+                ],
+                temperature: 0.4,
+                response_format: { type: "json_object" },
+            });
+            const workoutPlanText = workoutResult.choices[0].message.content || "{}";
 
             let workoutPlan = JSON.parse(workoutPlanText);
 
@@ -213,8 +210,16 @@ http.route({
         
         DO NOT add any fields that are not in this example. Your response must be a valid JSON object with no additional text.`;
 
-            const dietResult = await model.generateContent(dietPrompt);
-            const dietPlanText = dietResult.response.text();
+            const dietResult = await openai.chat.completions.create({
+                model: "gpt-4o-mini",
+                messages: [
+                    { role: "system", content: "You are an experienced nutrition coach. Always respond with valid JSON only." },
+                    { role: "user", content: dietPrompt },
+                ],
+                temperature: 0.4,
+                response_format: { type: "json_object" },
+            });
+            const dietPlanText = dietResult.choices[0].message.content || "{}";
 
             let dietPlan = JSON.parse(dietPlanText);
 

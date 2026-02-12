@@ -1,169 +1,264 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { vapi } from "@/lib/vapi";
+import { VoiceAssistant } from "@/lib/voice-assistant";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 
+interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
 const GenerateProgramPage = () => {
   const [callActive, setCallActive] = useState(false);
-  const [conncecting, setConnecting] = useState(false);
+  const [connecting, setConnecting] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [messages, setMessages] = useState<any[]>([]);
+  const [isListening, setIsListening] = useState(false);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [callEnded, setCallEnded] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [browserSupported, setBrowserSupported] = useState(true);
 
-  const { user } = useUser()
-  const router = useRouter()
+  const { user } = useUser();
+  const router = useRouter();
 
-  const messageContainerRef = useRef<HTMLDivElement>(null)
+  const messageContainerRef = useRef<HTMLDivElement>(null);
+  const voiceRef = useRef<VoiceAssistant | null>(null);
+  const messagesRef = useRef<ChatMessage[]>([]);
 
-  // SOLUTION to get rid of "Meeting has ended" error
+  // Keep messagesRef in sync
   useEffect(() => {
-    const originalError = console.error;
-    // override console.error to ignore "Meeting has ended" errors
-    console.error = function (msg, ...args) {
-      if (
-        msg &&
-        (msg.includes("Meeting has ended") ||
-          (args[0] && args[0].toString().includes("Meeting has ended")))
-      ) {
-        console.log("Ignoring known error: Meeting has ended");
-        return; // don't pass to original handler
-      }
+    messagesRef.current = messages;
+  }, [messages]);
 
-      // pass all other errors to the original handler
-      return originalError.call(console, msg, ...args);
-    };
-
-    // restore original handler on unmount
-    return () => {
-      console.error = originalError;
-    };
+  // Check browser support
+  useEffect(() => {
+    setBrowserSupported(VoiceAssistant.isSupported());
   }, []);
 
-  //auto scroll messages
+  // Auto-scroll messages
   useEffect(() => {
     if (messageContainerRef.current) {
-      messageContainerRef.current.scrollTop = messageContainerRef.current.scrollHeight
+      messageContainerRef.current.scrollTop =
+        messageContainerRef.current.scrollHeight;
     }
-  }, [messages])
+  }, [messages]);
 
-  //navigate yser to profile page after call ends
+  // Navigate user to profile page after call ends
   useEffect(() => {
     if (callEnded) {
       const redirectTimer = setTimeout(() => {
-        router.push("/profile")
+        router.push("/profile");
       }, 1500);
-      return () => clearTimeout(redirectTimer)
+      return () => clearTimeout(redirectTimer);
     }
-  }, [callEnded, router])
+  }, [callEnded, router]);
 
-
-  //set up event listner
+  // Cleanup on unmount
   useEffect(() => {
-    const handleCallStart = () => {
-      console.log("Call started")
-      setConnecting(true)
-      setCallActive(true)
-      setCallEnded(false)
-    }
-    const handleCallEnd = () => {
-      console.log("Call ended")
-      setConnecting(false)
-      setCallActive(false)
-      setIsSpeaking(false)
-      setCallEnded(true)
-    }
-    const handleSpeechStart = () => {
-      console.log("AI started Speaking")
-      setIsSpeaking(true)
-    }
-    const handleSpeechEnd = () => {
-      console.log("AI stopped Speaking")
-      setIsSpeaking(false)
-    }
-    const handleMessage = (message: any) => {
-      if (message.type === "transcript" && message.transcriptType === "final") {
-        const newMessage = { content: message.transcript, role: message.role }
-        setMessages(prev => [...prev, newMessage])
+    return () => {
+      if (voiceRef.current) {
+        voiceRef.current.stop();
       }
     };
-    const handleError = (error: any) => {
-      console.log("Vapi Error", error);
-      setConnecting(false);
-      setCallActive(false);
-    }
+  }, []);
 
-    vapi.on("call-start", handleCallStart)
-    vapi.on("call-end", handleCallEnd)
-    vapi.on("speech-start", handleSpeechStart)
-    vapi.on("speech-end", handleSpeechEnd)
-    vapi.on("message", handleMessage)
-    vapi.on("error", handleError)
+  const sendToAI = useCallback(
+    async (userText: string) => {
+      // Add user message to chat
+      const updatedMessages: ChatMessage[] = [
+        ...messagesRef.current,
+        { role: "user", content: userText },
+      ];
+      setMessages(updatedMessages);
+      setIsProcessing(true);
 
-    return () => {
-      vapi.off("call-start", handleCallStart)
-      vapi.off("call-end", handleCallEnd)
-      vapi.off("speech-start", handleSpeechStart)
-      vapi.off("speech-end", handleSpeechEnd)
-      vapi.off("message", handleMessage)
-      vapi.off("error", handleError)
-    }
-  }, [])
+      // Pause listening while processing
+      voiceRef.current?.pauseListening();
 
-  const toggleCall = async () => {
-    if (callActive) {
-      vapi.stop()
-    } else {
       try {
-        setConnecting(true)
-        setMessages([]);
-        setCallEnded(false)
-
         const fullName = user?.firstName
-          ? `${user?.firstName} ${user?.lastName}`.trim()
+          ? `${user.firstName} ${user.lastName || ""}`.trim()
           : "There";
-        await vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID, {
-          variableValues: {
-            full_name: fullName,
 
+        const res = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            messages: updatedMessages,
+            userName: fullName,
+          }),
+        });
+
+        if (!res.ok) {
+          const errBody = await res.json().catch(() => ({}));
+          console.error("Chat API error details:", errBody);
+          throw new Error(errBody.details || "Chat API failed");
+        }
+
+        const data = await res.json();
+        const { response, isComplete, userData } = data;
+
+        // Add AI response to chat
+        const newMessages: ChatMessage[] = [
+          ...updatedMessages,
+          { role: "assistant", content: response },
+        ];
+        setMessages(newMessages);
+        setIsProcessing(false);
+
+        // Speak the AI response
+        if (voiceRef.current && response) {
+          await voiceRef.current.speak(response);
+        }
+
+        // If data collection is complete, generate the program
+        if (isComplete && userData) {
+          setIsProcessing(true);
+          voiceRef.current?.stop();
+
+          try {
+            const programRes = await fetch("/api/generate-program", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                userId: user?.id,
+                ...userData,
+              }),
+            });
+
+            if (!programRes.ok) throw new Error("Program generation failed");
+
+            setCallActive(false);
+            setCallEnded(true);
+          } catch (err) {
+            console.error("Generate program error:", err);
+            setMessages((prev) => [
+              ...prev,
+              {
+                role: "assistant",
+                content:
+                  "Sorry, there was an error generating your program. Please try again.",
+              },
+            ]);
           }
-        })
+          setIsProcessing(false);
+        } else {
+          // Resume listening for next user input
+          voiceRef.current?.resumeListening();
+        }
+      } catch (err) {
+        console.error("Chat error:", err);
+        setIsProcessing(false);
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: "Sorry, I had trouble processing that. Could you say that again?",
+          },
+        ]);
+        // Resume listening after error
+        voiceRef.current?.resumeListening();
+      }
+    },
+    [user]
+  );
 
-      } catch (error) {
-        console.log("Vapi Error", error);
+  const toggleCall = useCallback(async () => {
+    if (callActive) {
+      // End the call
+      if (voiceRef.current) {
+        voiceRef.current.stop();
+        voiceRef.current = null;
+      }
+      setCallActive(false);
+      setIsSpeaking(false);
+      setIsListening(false);
+    } else {
+      // Start the call
+      setConnecting(true);
+      setMessages([]);
+      setCallEnded(false);
+
+      const voice = new VoiceAssistant();
+      voiceRef.current = voice;
+
+      voice.on("onListeningStart", () => setIsListening(true));
+      voice.on("onListeningStop", () => setIsListening(false));
+      voice.on("onSpeakingStart", () => setIsSpeaking(true));
+      voice.on("onSpeakingEnd", () => setIsSpeaking(false));
+      voice.on("onError", (error) => {
+        console.error("Voice error:", error);
+      });
+      voice.on("onTranscript", (transcript) => {
+        sendToAI(transcript);
+      });
+
+      // Get initial greeting from AI
+      try {
+        const fullName = user?.firstName
+          ? `${user.firstName} ${user.lastName || ""}`.trim()
+          : "There";
+
+        const res = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            messages: [],
+            userName: fullName,
+          }),
+        });
+
+        if (!res.ok) throw new Error("Failed to get greeting");
+
+        const data = await res.json();
+        const greeting = data.response;
+
+        setMessages([{ role: "assistant", content: greeting }]);
+        setCallActive(true);
+        setConnecting(false);
+
+        // Speak the greeting, then start listening
+        await voice.speak(greeting);
+        voice.start();
+      } catch (err) {
+        console.error("Start call error:", err);
         setConnecting(false);
       }
     }
-  }
+  }, [callActive, user, sendToAI]);
 
   return (
     <div className="flex flex-col min-h-screen text-foreground overflow-hidden pb-6 pt-24">
       <div className="container mx-auto px-4 h-full max-w-5xl">
-        {/*Title */}
+        {/* Title */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold font-mono">
-            <span>
-              Generate Your
-            </span>
-            <span className="text-primary uppercase">
-              Fitness Program
-            </span>
+            <span>Generate Your </span>
+            <span className="text-primary uppercase">Fitness Program</span>
           </h1>
           <p className="text-muted-foreground mt-2">
-            Have a voice with our AI assistant to create your personalized fitness program.
+            Have a voice conversation with our AI assistant to create your
+            personalized fitness program.
           </p>
 
+          {/* Browser support warning */}
+          {!browserSupported && (
+            <div className="mt-4 p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-sm">
+              ⚠️ Your browser doesn&apos;t support voice recognition. Please use
+              Chrome or Edge for the best experience.
+            </div>
+          )}
         </div>
 
-        {/*Video Call Area */}
+        {/* Video Call Area */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          {/*AI Assistant Card*/}
+          {/* AI Assistant Card */}
           <Card className="bg-card/90 backdrop-blur-sm border border-border overflow-hidden relative">
             <div className="aspect-video flex flex-col items-center justify-center p-6 relative">
-
               <div
                 className={`absolute inset-0 ${isSpeaking ? "opacity-30" : "opacity-0"
                   } transition-opacity duration-300`}
@@ -177,71 +272,108 @@ const GenerateProgramPage = () => {
                         }`}
                       style={{
                         animationDelay: `${i * 0.1}s`,
-                        height: isSpeaking ? `${Math.random() * 50 + 20}%` : "5%",
+                        height: isSpeaking
+                          ? `${Math.random() * 50 + 20}%`
+                          : "5%",
                       }}
                     />
                   ))}
                 </div>
               </div>
-              {/*AI IMAGE*/}
+              {/* AI IMAGE */}
               <div className="relative size-32 mb-4">
                 <div
-                  className={`absolute inset-0 bg-primary opacity-10 rounded-full blur-lg ${isSpeaking ? "animate-pulse" : ""}`}
+                  className={`absolute inset-0 bg-primary opacity-10 rounded-full blur-lg ${isSpeaking ? "animate-pulse" : ""
+                    }`}
                 />
                 <div className="relative w-full h-full rounded-full bg-card flex items-center justify-center border border-border overflow-hidden">
-
                   <Image
                     width={500}
                     height={500}
-                    src="/Generated Image September 28, 2025 - 5_47PM.png" alt="AI Assistant" className="w-full h-full object-cover" />
+                    src="/Generated Image September 28, 2025 - 5_47PM.png"
+                    alt="AI Assistant"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
               </div>
-              <h2 className="text-lg font-bold text-foreground">Fit Voice AI</h2>
-              <p className="text-sm text-muted-foreground mt-1">Your Personalized Fitness Coach</p>
+              <h2 className="text-lg font-bold text-foreground">
+                Fit Voice AI
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Your Personalized Fitness Coach
+              </p>
 
-              {/*Speaking Indicator */}
-              <div className={`mt-4 flex items-center gap-2 px-3 py-1 rounded-full bg-card border border-border ${isSpeaking ? "border-primary" : ""}`}>
+              {/* Speaking/Listening Indicator */}
+              <div
+                className={`mt-4 flex items-center gap-2 px-3 py-1 rounded-full bg-card border border-border ${isSpeaking
+                  ? "border-primary"
+                  : isListening
+                    ? "border-green-500"
+                    : ""
+                  }`}
+              >
                 <div
-                  className={`w-2 h-2 rounded-full ${isSpeaking ? "bg-primary animate-pulse" : "bg-muted"}`} />
-
+                  className={`w-2 h-2 rounded-full ${isSpeaking
+                    ? "bg-primary animate-pulse"
+                    : isListening
+                      ? "bg-green-500 animate-pulse"
+                      : isProcessing
+                        ? "bg-yellow-500 animate-pulse"
+                        : "bg-muted"
+                    }`}
+                />
                 <span className="text-xs text-muted-foreground">
-                  {isSpeaking ? "Speaking..." : callActive ? "Listening..." : callEnded ? "Redirecting to profile..." : "Waiting..."}
+                  {isSpeaking
+                    ? "Speaking..."
+                    : isListening
+                      ? "Listening..."
+                      : isProcessing
+                        ? "Thinking..."
+                        : callActive
+                          ? "Ready"
+                          : callEnded
+                            ? "Redirecting to profile..."
+                            : "Waiting..."}
                 </span>
               </div>
             </div>
           </Card>
-          {/*User Card */}
-          <Card className={`bg-card/90 backdrop-blur-sm border overflow-hidden relative`}>
+
+          {/* User Card */}
+          <Card className="bg-card/90 backdrop-blur-sm border overflow-hidden relative">
             <div className="aspect-video flex flex-col items-center justify-center p-6 relative">
-              {/* User Image */}
               <div className="relative size-32 mb-4">
                 {user?.imageUrl && (
                   <Image
                     fill
                     src={user.imageUrl}
                     alt="User"
-                    // ADD THIS "size-full" class to make it rounded on all images
                     className="size-full object-cover rounded-full"
                   />
                 )}
               </div>
               <h2 className="text-xl font-bold text-foreground">You</h2>
               <p className="text-sm text-muted-foreground mt-1">
-                {user ? (user.firstName + " " + (user.lastName || "")).trim() : "Guest"}
+                {user
+                  ? (user.firstName + " " + (user.lastName || "")).trim()
+                  : "Guest"}
               </p>
 
               {/* User Ready Text */}
-              <div className={`mt-4 flex items-center gap-2 px-3 py-1 rounded-full bg-card border`}>
-                <div className={`w-2 h-2 rounded-full bg-muted`} />
-                <span className="text-xs text-muted-foreground">Ready</span>
+              <div className="mt-4 flex items-center gap-2 px-3 py-1 rounded-full bg-card border">
+                <div
+                  className={`w-2 h-2 rounded-full ${isListening ? "bg-green-500 animate-pulse" : "bg-muted"
+                    }`}
+                />
+                <span className="text-xs text-muted-foreground">
+                  {isListening ? "Mic Active" : "Ready"}
+                </span>
               </div>
             </div>
           </Card>
-
-
         </div>
 
-        {/* MESSAGE COINTER  */}
+        {/* MESSAGE CONTAINER */}
         {messages.length > 0 && (
           <div
             ref={messageContainerRef}
@@ -251,23 +383,36 @@ const GenerateProgramPage = () => {
               {messages.map((msg, index) => (
                 <div key={index} className="message-item animate-fadeIn">
                   <div className="font-semibold text-xs text-muted-foreground mb-1">
-                    {msg.role === "assistant" ? "CodeFlex AI" : "You"}:
+                    {msg.role === "assistant" ? "Fit Voice AI" : "You"}:
                   </div>
                   <p className="text-foreground">{msg.content}</p>
                 </div>
               ))}
 
+              {isProcessing && (
+                <div className="message-item animate-fadeIn">
+                  <div className="font-semibold text-xs text-muted-foreground mb-1">
+                    Fit Voice AI:
+                  </div>
+                  <p className="text-muted-foreground italic">Thinking...</p>
+                </div>
+              )}
+
               {callEnded && (
                 <div className="message-item animate-fadeIn">
-                  <div className="font-semibold text-xs text-primary mb-1">System:</div>
+                  <div className="font-semibold text-xs text-primary mb-1">
+                    System:
+                  </div>
                   <p className="text-foreground">
-                    Your fitness program has been created! Redirecting to your profile...
+                    Your fitness program has been created! Redirecting to your
+                    profile...
                   </p>
                 </div>
               )}
             </div>
           </div>
         )}
+
         {/* CALL CONTROLS */}
         <div className="w-full flex justify-center gap-4">
           <Button
@@ -278,16 +423,16 @@ const GenerateProgramPage = () => {
                 : "bg-primary hover:bg-primary/90"
               } text-white relative`}
             onClick={toggleCall}
-            disabled={conncecting || callEnded}
+            disabled={connecting || callEnded || !browserSupported}
           >
-            {conncecting && (
+            {connecting && (
               <span className="absolute inset-0 rounded-full animate-ping bg-primary/50 opacity-75"></span>
             )}
 
             <span>
               {callActive
                 ? "End Call"
-                : conncecting
+                : connecting
                   ? "Connecting..."
                   : callEnded
                     ? "View Profile"
@@ -297,9 +442,7 @@ const GenerateProgramPage = () => {
         </div>
       </div>
     </div>
-
-
-  )
-}
+  );
+};
 
 export default GenerateProgramPage;
