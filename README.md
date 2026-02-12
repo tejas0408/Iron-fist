@@ -131,7 +131,7 @@ OPENAI_API_KEY=
 
 - **Node.js** 18+ installed
 - **npm** or your preferred package manager
-- Accounts on [Clerk](https://clerk.com/), [Convex](https://www.convex.dev/), and [Google AI Studio](https://aistudio.google.com/)
+- Accounts on [Clerk](https://clerk.com/) and [Convex](https://www.convex.dev/)
 
 ### Installation
 
