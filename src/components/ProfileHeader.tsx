@@ -1,11 +1,16 @@
-import { UserResource } from "@clerk/types";
+import { useUser } from "@clerk/nextjs";
 import CornerElements from "./CornerElements";
 import Image from "next/image";
 
-const ProfileHeader = ({ user }: { user: UserResource | null | undefined }) => {
+type ProfileHeaderProps = {
+    user: ReturnType<typeof useUser>["user"];
+};
+
+const ProfileHeader = ({ user }: ProfileHeaderProps) => {
     if (!user) return null;
+
     return (
-        <div className="mb-10 relative backdrop-blur-sm border border-border  p-6">
+        <div className="mb-10 relative backdrop-blur-sm border border-border p-6">
             <CornerElements />
 
             <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
@@ -27,7 +32,7 @@ const ProfileHeader = ({ user }: { user: UserResource | null | undefined }) => {
                             </span>
                         </div>
                     )}
-                    <div className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-green-500 border-2 border-background"></div>
+                    <div className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-green-500 border-2 border-background" />
                 </div>
 
                 <div className="flex-1">
@@ -36,11 +41,12 @@ const ProfileHeader = ({ user }: { user: UserResource | null | undefined }) => {
                             <span className="text-foreground">{user.fullName}</span>
                         </h1>
                         <div className="flex items-center bg-cyber-terminal-bg backdrop-blur-sm border border-border rounded px-3 py-1">
-                            <div className="w-2 h-2 rounded-full bg-primary animate-pulse mr-2"></div>
+                            <div className="w-2 h-2 rounded-full bg-primary animate-pulse mr-2" />
                             <p className="text-xs font-mono text-primary">USER ACTIVE</p>
                         </div>
                     </div>
-                    <div className="h-px w-full bg-gradient-to-r from-primary via-secondary to-primary opacity-50 my-2"></div>
+
+                    <div className="h-px w-full bg-gradient-to-r from-primary via-secondary to-primary opacity-50 my-2" />
                     <p className="text-muted-foreground font-mono">
                         {user.primaryEmailAddress?.emailAddress}
                     </p>
@@ -49,4 +55,5 @@ const ProfileHeader = ({ user }: { user: UserResource | null | undefined }) => {
         </div>
     );
 };
+
 export default ProfileHeader;
