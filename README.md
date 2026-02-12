@@ -3,7 +3,7 @@
 
 - 🚀 Tech stack: Next.js, React, Tailwind & Shadcn UI
 - 🎙️ Voice AI Assistant (Vapi)
-- 🧠 LLM Integration (Gemini AI)
+- 🧠 LLM Integration (OpenAI AI)
 - 🏋️ Personalized Workout Plans
 - 🥗 Custom Diet Programs
 - 🔒 Authentication & Authorization (Clerk)
